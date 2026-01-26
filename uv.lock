@@ -277,10 +277,14 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "browser-use" },
+    { name = "cryptography" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "browser-use", specifier = "==0.11.4" }]
+requires-dist = [
+    { name = "browser-use", specifier = "==0.11.4" },
+    { name = "cryptography" },
+]
 
 [[package]]
 name = "browser-use-sdk"

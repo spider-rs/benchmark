@@ -1,6 +1,7 @@
 .venv/
 __pycache__/
 *.pyc
-run_data/
 .env
+run_data/
+official_results/
 DESIGN.MD

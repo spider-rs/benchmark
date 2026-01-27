@@ -32,7 +32,7 @@ MODEL_NAME = "ChatBrowserUse"
 RUN_START = datetime.now().strftime("%Y%m%d_%H%M%S")
 RUN_KEY = f"{AGENT_FRAMEWORK_NAME}_{AGENT_FRAMEWORK_VERSION}_browser_{BROWSER_NAME}_model_{MODEL_NAME}"
 RUN_DATA_DIR = Path(__file__).parent / "run_data" / f"{RUN_KEY}_start_at_{RUN_START}"
-OFFICIAL_RESULTS_FILE = Path(__file__).parent / "official_results" / f"{RUN_KEY}.json"
+RESULTS_FILE = Path(__file__).parent / "results" / f"{RUN_KEY}.json"
 
 
 def encode_screenshots(paths: list[str]) -> list[str]:
@@ -124,10 +124,10 @@ async def main():
     total_cost = sum(r.get("cost", 0) for r in results)
 
     # Save to official_results (append to existing runs)
-    OFFICIAL_RESULTS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    runs = json.loads(OFFICIAL_RESULTS_FILE.read_text()) if OFFICIAL_RESULTS_FILE.exists() else []
+    RESULTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    runs = json.loads(RESULTS_FILE.read_text()) if RESULTS_FILE.exists() else []
     runs.append({"run_start": RUN_START, "tasks_completed": len(results), "tasks_successful": successful, "total_steps": total_steps, "total_duration": total_duration, "total_cost": total_cost})
-    OFFICIAL_RESULTS_FILE.write_text(json.dumps(runs, indent=2))
+    RESULTS_FILE.write_text(json.dumps(runs, indent=2))
 
     print(f"Run complete: {successful}/{len(results)} tasks successful, {total_steps} steps, {total_duration:.1f}s, ${total_cost:.2f}")
 

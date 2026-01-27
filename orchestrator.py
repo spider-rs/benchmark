@@ -17,15 +17,16 @@ GITHUB_TOKEN = os.getenv("GITHUB_PAT")
 REPO = "browser-use/benchmark"  # owner/repo
 WORKFLOW_FILE = "eval.yaml"
 
-TOTAL_TASKS = 1
-BATCH_SIZE = 1
-MAX_CONCURRENT_BATCHES = 10
+TOTAL_TASKS = 100
+BATCH_SIZE = 10
+MAX_CONCURRENT_BATCHES = 25
 POLL_INTERVAL = 5  # seconds
 
 # Models to evaluate: {model_name: number_of_runs}
 RUNS = {
-    "ChatBrowserUse-1": 1,
-    "gemini-2.5-flash": 1,
+    "ChatBrowserUse-1": 5,
+    "ChatBrowserUse-2": 5,
+    "gemini-2.5-flash": 5,
 }
 
 RESULTS_DIR = Path(__file__).parent / "official_results"

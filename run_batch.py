@@ -12,20 +12,38 @@ from run_eval import load_tasks, run_task
 
 load_dotenv()
 
+def interleave(tasks: list) -> list:
+    """Reorder 100 tasks, 20 per section to balance difficulty."""
+    reordered = []
+    for i in range(20):
+        for d in range(5): 
+            reordered.append(tasks[d * 20 + i])
+    return reordered
+
+
 MODELS = {
     "ChatBrowserUse-1": lambda: ChatBrowserUse(model="bu-1-0"),
     "ChatBrowserUse-2": lambda: ChatBrowserUse(model="bu-2-0"),
-    "gpt-4o": lambda: ChatOpenAI(model="gpt-4o", api_key=os.getenv("OPENAI_API_KEY")),
-    "gpt-4o-mini": lambda: ChatOpenAI(model="gpt-4o-mini", api_key=os.getenv("OPENAI_API_KEY")),
-    "claude-sonnet-4": lambda: ChatAnthropic(model="claude-sonnet-4", api_key=os.getenv("ANTHROPIC_API_KEY")),
+
+    "gpt-5-mini": lambda: ChatOpenAI(model="gpt-5-mini", api_key=os.getenv("OPENAI_API_KEY")),
+    "gpt-5.1-codex-mini": lambda: ChatOpenAI(model="gpt-5.1-codex-mini", api_key=os.getenv("OPENAI_API_KEY")),
+    "gpt-5": lambda: ChatOpenAI(model="gpt-5", api_key=os.getenv("OPENAI_API_KEY")),
+
     "claude-3-5-haiku": lambda: ChatAnthropic(model="claude-3-5-haiku", api_key=os.getenv("ANTHROPIC_API_KEY")),
+    "claude-haiku-4.5": lambda: ChatAnthropic(model="claude-haiku-4.5", api_key=os.getenv("ANTHROPIC_API_KEY")),
+    "claude-sonnet-4.5": lambda: ChatAnthropic(model="claude-sonnet-4.5", api_key=os.getenv("ANTHROPIC_API_KEY")),
+    "claude-opus-4.5": lambda: ChatAnthropic(model="claude-opus-4.5", api_key=os.getenv("ANTHROPIC_API_KEY")),
+
+    "gemini-2.5-flash-lite": lambda: ChatGoogle(model="gemini-2.5-flash-lite", api_key=os.getenv("GOOGLE_API_KEY")),
     "gemini-2.5-flash": lambda: ChatGoogle(model="gemini-2.5-flash", api_key=os.getenv("GOOGLE_API_KEY")),
+    "gemini-3-flash-preview": lambda: ChatGoogle(model="gemini-3-flash-preview", api_key=os.getenv("GOOGLE_API_KEY")),
+    "gemini-3-pro-preview": lambda: ChatGoogle(model="gemini-3-pro-preview", api_key=os.getenv("GOOGLE_API_KEY")),
 }
 
 
 async def run_batch(model_name: str, start: int, end: int, parallel: int = 3, tracking_id: str = None, run_start: str = None) -> dict:
     """Run tasks[start:end] with given model. Returns results summary."""
-    tasks = load_tasks()[start:end]
+    tasks = interleave(load_tasks())[start:end]
     llm = MODELS[model_name]()
     sem = asyncio.Semaphore(parallel)
     

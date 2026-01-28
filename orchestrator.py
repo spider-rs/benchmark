@@ -25,9 +25,12 @@ POLL_INTERVAL = 5  # seconds
 
 # Models to evaluate: {model_name: number_of_runs}
 RUNS = {
-    "ChatBrowserUse-1": 5,
-    "ChatBrowserUse-2": 5,
-    "gemini-2.5-flash": 5,
+    # "ChatBrowserUse-1": 5,
+    # "ChatBrowserUse-2": 5,
+    "gemini-2.5-flash": 1,
+    # "claude-haiku-4.5": 5,
+    # "claude-sonnet-4.5": 5,
+    # "gemini-3-flash-preview": 5,
 }
 
 RESULTS_DIR = Path(__file__).parent / "official_results"
@@ -39,27 +42,48 @@ def dispatch_batch(model: str, start: int, end: int, tracking_id: str, run_start
     """Dispatch a workflow run. Returns True if successful."""
     url = f"{API_BASE}/actions/workflows/{WORKFLOW_FILE}/dispatches"
     data = {"ref": "main", "inputs": {"model": model, "start": str(start), "end": str(end), "parallel": "3", "tracking_id": tracking_id, "run_start": run_start}}
-    resp = requests.post(url, headers=HEADERS, json=data)
+    resp = requests.post(url, headers=HEADERS, json=data, timeout=30)
     return resp.status_code == 204
 
 
 def list_artifacts() -> list[dict]:
-    """List all artifacts in the repo."""
-    url = f"{API_BASE}/actions/artifacts?per_page=100"
-    resp = requests.get(url, headers=HEADERS)
-    return resp.json().get("artifacts", []) if resp.status_code == 200 else []
+    """List recent artifacts in the repo (paginated). Returns newest first."""
+    artifacts = []
+    page = 1
+    while page <= 1:  # Fetch up to 100 artifacts
+        url = f"{API_BASE}/actions/artifacts?per_page=100&page={page}"
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=30)
+        except requests.exceptions.Timeout:
+            print(f"Timeout listing artifacts page {page}, will retry next poll")
+            break
+        if resp.status_code != 200:
+            break
+        batch = resp.json().get("artifacts", [])
+        if not batch:
+            break
+        artifacts.extend(batch)
+        page += 1
+    return artifacts
 
 
-def download_artifact(artifact_id: int) -> dict | None:
+def download_artifact(artifact_id: int, retries: int = 3) -> dict | None:
     """Download and extract artifact, return parsed JSON."""
     url = f"{API_BASE}/actions/artifacts/{artifact_id}/zip"
-    resp = requests.get(url, headers=HEADERS)
-    if resp.status_code != 200:
-        return None
-    with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
-        for name in zf.namelist():
-            if name.endswith(".json"):
-                return json.loads(zf.read(name))
+    for attempt in range(retries):
+        try:
+            resp = requests.get(url, headers=HEADERS, timeout=60)
+            if resp.status_code != 200:
+                return None
+            with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
+                for name in zf.namelist():
+                    if name.endswith(".json"):
+                        return json.loads(zf.read(name))
+            return None
+        except requests.exceptions.Timeout:
+            print(f"Timeout downloading artifact {artifact_id}, attempt {attempt + 1}/{retries}")
+            if attempt < retries - 1:
+                time.sleep(2)
     return None
 
 
@@ -124,7 +148,11 @@ def main():
         print(f"Polling... ({len(dispatched)} running, {len(pending)} pending)")
         time.sleep(POLL_INTERVAL)
         
-        for artifact in list_artifacts():
+        artifacts = list_artifacts()
+        batch_artifacts = [a for a in artifacts if a.get("name", "").startswith("batch-")]
+        print(f"Found {len(batch_artifacts)} batch artifacts")
+        
+        for artifact in artifacts:
             name = artifact.get("name", "")
             if not name.startswith("batch-"):
                 continue

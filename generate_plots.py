@@ -47,15 +47,9 @@ DARK = Theme(
 )
 
 
-def string_to_color(s: str, theme: Theme, muted: bool = False) -> str:
-    """Generate consistent color for a string. Muted version has lower saturation."""
-    h = 0
-    for c in s:
-        h = ((h << 5) - h) + ord(c)
-        h &= 0xFFFFFFFF
-    
-    golden_ratio = 0.618033988749895
-    hue = ((abs(h) * golden_ratio) % 1)
+def index_to_color(index: int, total: int, theme: Theme, muted: bool = False) -> str:
+    """Generate evenly-spaced color based on index. Muted version has lower saturation."""
+    hue = index / total
     
     if theme.name == "dark":
         sat = 0.30 if muted else 0.65
@@ -68,11 +62,15 @@ def string_to_color(s: str, theme: Theme, muted: bool = False) -> str:
     return f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
 
 
-def get_model_color(model: str, theme: Theme) -> str:
-    """Primary color for highlighted model, unique muted color for others."""
-    if model == HIGHLIGHT_MODEL:
-        return theme.primary
-    return string_to_color(model, theme, muted=True)
+def build_model_colors(models: list[str], theme: Theme) -> dict[str, str]:
+    """Build color mapping for all models. Highlighted model gets primary, others get evenly-spaced hues."""
+    colors = {}
+    non_highlighted = sorted([m for m in models if m != HIGHLIGHT_MODEL])
+    for i, model in enumerate(non_highlighted):
+        colors[model] = index_to_color(i, len(non_highlighted), theme, muted=True)
+    if HIGHLIGHT_MODEL in models:
+        colors[HIGHLIGHT_MODEL] = theme.primary
+    return colors
 
 
 def load_results() -> dict[str, list[dict]]:
@@ -134,13 +132,14 @@ def add_legend(ax, items: list[tuple[str, str]], theme: Theme):
 
 def plot_accuracy_by_model(results: dict[str, list[dict]], theme: Theme):
     """Bar chart with highlighted model in primary, others in unique muted colors."""
+    model_colors = build_model_colors(list(results.keys()), theme)
     data = []
     for model, runs in results.items():
         accs = compute_accuracies(runs)
         if not accs:
             continue
         mean, lo, hi = bootstrap_ci(accs)
-        color = get_model_color(model, theme)
+        color = model_colors[model]
         data.append({"model": model, "mean": mean * 100, "err_lo": (mean - lo) * 100, "err_hi": (hi - mean) * 100, "color": color})
     
     if not data:
@@ -170,6 +169,7 @@ def plot_accuracy_by_model(results: dict[str, list[dict]], theme: Theme):
 
 def plot_accuracy_vs_throughput(results: dict[str, list[dict]], theme: Theme):
     """Scatter plot with highlighted model prominent, others in unique muted colors."""
+    model_colors = build_model_colors(list(results.keys()), theme)
     data = []
     for model, runs in results.items():
         accs = compute_accuracies(runs)
@@ -178,7 +178,7 @@ def plot_accuracy_vs_throughput(results: dict[str, list[dict]], theme: Theme):
             continue
         acc_mean, acc_lo, acc_hi = bootstrap_ci(accs)
         tph_mean, tph_lo, tph_hi = bootstrap_ci(tph)
-        color = get_model_color(model, theme)
+        color = model_colors[model]
         data.append({
             "model": model, "color": color,
             "acc": acc_mean * 100, "acc_lo": (acc_mean - acc_lo) * 100, "acc_hi": (acc_hi - acc_mean) * 100,

@@ -5,6 +5,7 @@ description = "Open source benchmark for browser-use"
 requires-python = ">=3.11"
 dependencies = [
     "browser-use==0.11.5",
+    "certifi",
     "cryptography",
     "python-dotenv",
 ]

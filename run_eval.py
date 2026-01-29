@@ -1,6 +1,10 @@
 """Main benchmark evaluation script."""
 
-import os, logging
+# Fix for MacOS users using uv without SSL certificate setup
+import certifi, os
+os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+
+import logging
 os.environ["BROWSER_USE_SETUP_LOGGING"] = "false"  # Must be set before importing browser_use
 logging.basicConfig(level=logging.CRITICAL)  # Suppress all logs including shutdown warnings
 

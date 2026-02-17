@@ -15,7 +15,7 @@ from pathlib import Path
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 from browser_use import Agent, Browser, ChatGoogle
-from browser_use.llm import ChatBrowserUse
+from browser_use.llm import ChatBrowserUse, ChatAnthropic
 from judge import construct_judge_messages, JudgementResult
 
 load_dotenv()
@@ -30,7 +30,7 @@ TASK_TIMEOUT = 1800 # 30 minutes max per task
 BROWSER_NAME = "BrowserUseCloud"
 AGENT_FRAMEWORK_NAME = "BrowserUse"
 AGENT_FRAMEWORK_VERSION = "0.11.5"
-MODEL_NAME = "ChatBrowserUse-2"
+MODEL_NAME = "claude-sonnet-4-6"
 
 # Run naming
 RUN_START = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -119,7 +119,8 @@ async def run_task(task: dict, semaphore: asyncio.Semaphore, llm=None, run_data_
 
 async def main():
     tasks, sem = load_tasks(), asyncio.Semaphore(MAX_CONCURRENT)
-    results = await asyncio.gather(*[run_task(t, sem) for t in tasks])
+    llm = ChatAnthropic(model="claude-sonnet-4-6", api_key=os.getenv("ANTHROPIC_API_KEY"))
+    results = await asyncio.gather(*[run_task(t, sem, llm=llm) for t in tasks])
     
     # Aggregate metrics
     successful = sum(1 for r in results if r.get("score") == 1)

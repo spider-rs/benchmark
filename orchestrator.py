@@ -25,14 +25,7 @@ POLL_INTERVAL = 30  # seconds
 
 # Models to evaluate: {model_name: number_of_runs}
 RUNS = {
-    "ChatBrowserUse-1": 5,
-    "ChatBrowserUse-2": 5,
-    "gemini-2.5-flash": 5,
-    "claude-haiku-4-5": 5,
-    "claude-sonnet-4-5": 5,
-    "gemini-3-pro-preview": 5,
-    "gpt-5-mini": 5,
-    "gpt-5": 5,
+    "claude-sonnet-4-6": 1,
 }
 
 RESULTS_DIR = Path(__file__).parent / "official_results"
@@ -43,7 +36,7 @@ HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.
 def dispatch_batch(model: str, start: int, end: int, tracking_id: str, run_start: str) -> bool:
     """Dispatch a workflow run. Returns True if successful."""
     url = f"{API_BASE}/actions/workflows/{WORKFLOW_FILE}/dispatches"
-    data = {"ref": "main", "inputs": {"model": model, "start": str(start), "end": str(end), "parallel": "3", "tracking_id": tracking_id, "run_start": run_start}}
+    data = {"ref": "claude/slack-benchmark-sonnet-sYH4m", "inputs": {"model": model, "start": str(start), "end": str(end), "parallel": "3", "tracking_id": tracking_id, "run_start": run_start}}
     resp = requests.post(url, headers=HEADERS, json=data, timeout=30)
     return resp.status_code == 204
 

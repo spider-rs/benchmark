@@ -27,6 +27,31 @@
 <h1 align="center">Open-Source Benchmarks</h1>
 </br>
 
+### **Stealth_Bench_V1**: 71 tasks for evaluating browser stealth across anti-bot protections
+
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="stealth_bench/official_plots/accuracy_by_browser_light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="stealth_bench/official_plots/accuracy_by_browser_dark.png">
+  <img alt="Stealth Bench - Accuracy by Browser" src="stealth_bench/official_plots/accuracy_by_browser_light.png" width="100%">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="stealth_bench/official_plots/category_heatmap_light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="stealth_bench/official_plots/category_heatmap_dark.png">
+  <img alt="Stealth Bench - Category Heatmap" src="stealth_bench/official_plots/category_heatmap_light.png" width="100%">
+</picture>
+
+**Run the stealth benchmark:**
+```bash
+uv run python run_eval.py --benchmark Stealth_Bench_V1 --browser <provider>
+```
+
+Available providers: `browser-use-cloud`, `anchor`, `browserbase`, `browserless`, `hyperbrowser`, `onkernel`, `steel`, `local_headful`, `local_headless`
+
+Results and official data are in [`stealth_bench/`](stealth_bench/). Read more in our [blog post](https://browser-use.com/posts/stealth-benchmark).
+
+---
+
 ### **BU_Bench_V1**: 100 hand-selected tasks for evaluating browser automation agents
 
 <picture>
@@ -39,22 +64,6 @@
   <source media="(prefers-color-scheme: light)" srcset="official_plots/accuracy_vs_throughput_light.png">
   <source media="(prefers-color-scheme: dark)" srcset="official_plots/accuracy_vs_throughput_dark.png">
   <img alt="Accuracy vs Latency" src="official_plots/accuracy_vs_throughput_light.png" width="100%">
-</picture>
-
----
-
-### **Stealth_Bench_V1**: 80 tasks for evaluating browser stealth across anti-bot protections
-
-<picture>
-  <source media="(prefers-color-scheme: light)" srcset="stealth_bench/official_plots/accuracy_by_browser_light.png">
-  <source media="(prefers-color-scheme: dark)" srcset="stealth_bench/official_plots/accuracy_by_browser_dark.png">
-  <img alt="Stealth Bench - Accuracy by Browser" src="stealth_bench/official_plots/accuracy_by_browser_light.png" width="100%">
-</picture>
-
-<picture>
-  <source media="(prefers-color-scheme: light)" srcset="stealth_bench/official_plots/category_heatmap_light.png">
-  <source media="(prefers-color-scheme: dark)" srcset="stealth_bench/official_plots/category_heatmap_dark.png">
-  <img alt="Stealth Bench - Category Heatmap" src="stealth_bench/official_plots/category_heatmap_light.png" width="100%">
 </picture>
 
 ---

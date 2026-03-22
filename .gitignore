@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .env
+.claude/
 run_data/
 DESIGN.MD
 results/

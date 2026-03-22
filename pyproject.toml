@@ -9,6 +9,7 @@ dependencies = [
     "cryptography",
     "httpx",
     "python-dotenv",
+    "spider-browser",
 ]
 
 [build-system]

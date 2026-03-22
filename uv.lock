@@ -281,6 +281,7 @@ dependencies = [
     { name = "cryptography" },
     { name = "httpx" },
     { name = "python-dotenv" },
+    { name = "spider-browser" },
 ]
 
 [package.dev-dependencies]
@@ -296,6 +297,7 @@ requires-dist = [
     { name = "cryptography" },
     { name = "httpx" },
     { name = "python-dotenv" },
+    { name = "spider-browser" },
 ]
 
 [package.metadata.requires-dev]
@@ -5322,6 +5324,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/7b/ae/2d9c981590ed9999a0d91755b47fc74f74de286b0f5cee14c9269041e6c4/soupsieve-2.8.3.tar.gz", hash = "sha256:3267f1eeea4251fb42728b6dfb746edc9acaffc4a45b27e19450b676586e8349", size = 118627, upload-time = "2026-01-20T04:27:02.457Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl", hash = "sha256:ed64f2ba4eebeab06cc4962affce381647455978ffc1e36bb79a545b91f45a95", size = 37016, upload-time = "2026-01-20T04:27:01.012Z" },
+]
+
+[[package]]
+name = "spider-browser"
+version = "0.2.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "websockets" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a8/5c/fa22af353893f7dcdd799390a7724bec5b1f2c306ba97349be5dfd255d66/spider_browser-0.2.5.tar.gz", hash = "sha256:1ec94d00bee4e7d486db049d08c609b21c79178f4e9dacb22e57d776e82cab47", size = 33517, upload-time = "2026-03-06T18:10:04.862Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5f/e5/28d1c9f32d5c936db7bbbd49f8a6d6fc882aa532ae364cf9db3ebbbf6975/spider_browser-0.2.5-py3-none-any.whl", hash = "sha256:ab6445c56587f3380e90330fca0302b7a485d727ad8c06c69a79f25e7a45c4bf", size = 46754, upload-time = "2026-03-06T18:10:03.633Z" },
 ]
 
 [[package]]

@@ -26,6 +26,7 @@ PROVIDERS = [
     "local_headless",
     "onkernel",
     "rebrowser",
+    "spider",
     "steel",
 ]
 

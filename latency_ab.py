@@ -99,6 +99,54 @@ def compare(base_path: str, branch_path: str):
     return 0 if worst <= 5 else 1
 
 
+async def interleave(base_cdp: str, branch_cdp: str, runs: int, out: str | None):
+    """Alternate the two builds one navigation at a time.
+
+    A block of base runs followed by a block of branch runs compares two
+    builds and also two moments. On a machine shared with other work those
+    moments differ by more than the code does: the same build measured twice
+    an hour apart has read 0.8 s and 62 s here. Alternating puts both builds
+    through the same minute, so a drift in load lands on both.
+    """
+    print(f"interleaved, {runs} navigations per url per build")
+    print(f"  base   {revision(base_cdp)}")
+    print(f"  branch {revision(branch_cdp)}")
+    base_rows, branch_rows = [], []
+    for url in URLS:
+        b_times, c_times, b_err, c_err = [], [], 0, 0
+        for _ in range(runs):
+            for cdp, times in ((base_cdp, b_times), (branch_cdp, c_times)):
+                t0 = time.time()
+                try:
+                    await asyncio.wait_for(fetch_page(cdp, url), timeout=60)
+                    times.append((time.time() - t0) * 1000)
+                except Exception:  # noqa: BLE001
+                    if cdp == base_cdp:
+                        b_err += 1
+                    else:
+                        c_err += 1
+        row = lambda t, e: {"url": url, "n": len(t), "errors": e,  # noqa: E731
+                            "p50_ms": round(pct(t, 50), 1), "p95_ms": round(pct(t, 95), 1),
+                            "median_bytes": 0}
+        base_rows.append(row(b_times, b_err))
+        branch_rows.append(row(c_times, c_err))
+        b, c = base_rows[-1], branch_rows[-1]
+        d50 = (c["p50_ms"] - b["p50_ms"]) / b["p50_ms"] * 100 if b["p50_ms"] else 0
+        d95 = (c["p95_ms"] - b["p95_ms"]) / b["p95_ms"] * 100 if b["p95_ms"] else 0
+        print(f"  {url[:46]:<48} base p50 {b['p50_ms']:>7.0f} p95 {b['p95_ms']:>7.0f}"
+              f" | branch p50 {c['p50_ms']:>7.0f} p95 {c['p95_ms']:>7.0f} | d50 {d50:+6.1f}% d95 {d95:+6.1f}%")
+    worst = 0.0
+    for b, c in zip(base_rows, branch_rows):
+        if b["p95_ms"]:
+            worst = max(worst, (c["p95_ms"] - b["p95_ms"]) / b["p95_ms"] * 100)
+    print()
+    print(f"worst p95 regression {worst:+.1f}% -> {'PASS' if worst <= 5 else 'FAIL'} (the bar is 5%)")
+    if out:
+        Path(out).write_text(json.dumps({"mode": "interleave", "base": base_rows, "branch": branch_rows}, indent=2))
+        print(f"wrote {out}")
+    return 0 if worst <= 5 else 1
+
+
 async def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cdp")
@@ -106,10 +154,14 @@ async def main():
     ap.add_argument("--runs", type=int, default=10)
     ap.add_argument("--json")
     ap.add_argument("--compare", nargs=2, metavar=("BASE", "BRANCH"))
+    ap.add_argument("--interleave", nargs=2, metavar=("BASE_CDP", "BRANCH_CDP"),
+                    help="alternate the two builds navigation by navigation")
     args = ap.parse_args()
 
     if args.compare:
         sys.exit(compare(*args.compare))
+    if args.interleave:
+        sys.exit(await interleave(args.interleave[0], args.interleave[1], args.runs, args.json))
     if not args.cdp:
         ap.error("--cdp is required unless --compare is given")
 

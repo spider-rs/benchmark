@@ -126,7 +126,7 @@ async def run_task(
                 captcha="solve",
                 smart_retry=True,
                 max_retries=12,
-                stealth=0,
+                stealth=2,
                 max_stealth_levels=3,
                 connect_timeout_ms=30_000,
                 command_timeout_ms=30_000,
